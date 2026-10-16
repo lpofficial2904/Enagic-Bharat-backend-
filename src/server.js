@@ -286,10 +286,19 @@ app.post("/api/contact", async (request, response) => {
         : {}),
     });
   } catch (error) {
-    console.error("Contact email failed:", error);
+    console.error("Contact email failed:", {
+      code: error.code,
+      command: error.command,
+      responseCode: error.responseCode,
+      response: error.response,
+      message: error.message,
+    });
     return response.status(500).json({
       success: false,
-      message: "Email failed. Please try again later.",
+      message:
+        process.env.NODE_ENV === "development"
+          ? `Email delivery failed (${error.code || "SMTP_ERROR"}): ${error.response || error.message}`
+          : "Email failed. Please try again later.",
     });
   }
 });
