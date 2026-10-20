@@ -17,6 +17,7 @@ const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
+const contactRateWindows = new Map();
 
 app.use(
   cors({
@@ -192,6 +193,19 @@ app.get("/health", (_request, response) => {
 });
 
 app.post("/api/contact", async (request, response) => {
+  const now = Date.now();
+  const clientKey = request.ip || request.socket.remoteAddress || "unknown";
+  const recentSubmissions = (contactRateWindows.get(clientKey) ?? [])
+    .filter((timestamp) => now - timestamp < 10 * 60 * 1000);
+  if (recentSubmissions.length >= 5) {
+    return response.status(429).json({
+      success: false,
+      message: "Too many enquiries were sent. Please wait a few minutes and try again.",
+    });
+  }
+  recentSubmissions.push(now);
+  contactRateWindows.set(clientKey, recentSubmissions);
+
   const missingEnv = getMissingEnv();
   if (missingEnv.length > 0) {
     console.error("Missing contact email environment variables:", missingEnv.join(", "));
