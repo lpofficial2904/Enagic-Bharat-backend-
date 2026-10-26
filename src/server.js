@@ -105,6 +105,8 @@ function buildEmailTemplate(lead) {
     ["Full Address", lead.city],
     ["Pincode", lead.pincode],
     ["Preferred Time", lead.timeSlot],
+    ["Product", lead.product],
+    ["Listed Product Price", lead.productPrice],
     ["Customer Message", lead.message],
   ]
     .map(([label, value]) => renderDetail(label, value))
@@ -215,7 +217,7 @@ app.post("/api/contact", async (request, response) => {
     });
   }
 
-  const { name, email, phone, city, pincode, timeSlot, message } = request.body ?? {};
+  const { name, email, phone, city, pincode, timeSlot, product, productPrice, message } = request.body ?? {};
 
   const lead = {
     name: normalizeField(name),
@@ -224,6 +226,8 @@ app.post("/api/contact", async (request, response) => {
     city: normalizeField(city),
     pincode: normalizeField(pincode),
     timeSlot: normalizeField(timeSlot),
+    product: normalizeField(product),
+    productPrice: normalizeField(productPrice),
     message: normalizeField(message),
   };
 
@@ -274,6 +278,8 @@ app.post("/api/contact", async (request, response) => {
         `Address / City: ${lead.city}`,
         `Pincode: ${lead.pincode}`,
         `Preferred Time: ${lead.timeSlot}`,
+        `Product: ${lead.product}`,
+        `Listed Product Price: ${lead.productPrice}`,
         `Message: ${lead.message}`,
       ].join("\n"),
       html: buildEmailTemplate(lead),
